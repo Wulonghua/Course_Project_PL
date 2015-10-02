@@ -15,6 +15,7 @@
 #include <iostream>
 #include <string>
 #include <locale>
+#include <cstdlib>
 #include <stdexcept>
 
 using namespace std;
