@@ -20,35 +20,34 @@ int main()
     string strExpr;
     LispParser lp;
     char t;
+
+    // put all texts from the inputfile to the string strExpr
     while(true)
     {
         t = getchar();
         if(t==std::char_traits<char>::eof())
-            break;
-        if(t=='\n')
         {
-            if(strExpr.length()>0)
-            {
-
-                size_t i=0;
-                TreeNode *root = new TreeNode();
-                lp.resetStatus();
-                lp.buildBinaryTree(strExpr,i,root);
-                lp.checkInnerNodesList(root);
-                if(lp.getIsAllList())
-                    lp.printListExpr(root);
-                else
-                    lp.printNodeExpr(root);
-                cout << endl;
-                lp.deleteBinaryTree(root);
-            }
-            strExpr.clear();
-            continue;
+            break;
         }
         if(!isspace(t))
             strExpr.push_back(t);
     }
 
+    size_t i=0;
+    size_t strLen = strExpr.length();
+    while(i<strLen)
+    {
+        TreeNode *root = new TreeNode();
+        lp.resetStatus();
+        lp.buildBinaryTree(strExpr,i,root);
+        lp.checkInnerNodesList(root);
+        if(lp.getIsAllList())
+            lp.printListExpr(root);
+        else
+            lp.printNodeExpr(root);
+        cout << endl;
+        lp.deleteBinaryTree(root);
+    }
     return 0;
 }
 

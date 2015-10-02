@@ -1,17 +1,17 @@
-#ifndef LISPPARSER_H
-#define LISPPARSER_H
-
 /***********************************************************************************
 *  Copyright(c) 2015     wu.2724@osu.edu
 *  All rights reserved.
 *
 *  File name:   lispparser
-*  Description: this is the class LispParser, which mainly realizes the funtion of
+*  Description: This is the class LispParser, which mainly realizes the funtion of
 *  lexical and syntatic analysis, and output the results in required format.
 *
 *  Date: 10/01/2015
 *  Author: Longhua Wu
 *************************************************************************************/
+#ifndef LISPPARSER_H
+#define LISPPARSER_H
+
 #include <iostream>
 #include <string>
 #include <locale>
@@ -49,9 +49,9 @@ private:
 
 //CLASS MEMBER
 private:
-    bool hasLetter;      // determine whether an atom has letter.
-    bool isAllList;      // determine whether inner nodes' isList attributes are all true
-                         // if it is true, print out in list notation,otherwise dot notation
+    bool hasLetter;           // determine whether an atom has letter.
+    bool isAllList;           // determine whether inner nodes' isList attributes are all true
+                              // if it is true, print out in list notation,otherwise dot notation
 };
 
 #endif // LISPPARSER_H
