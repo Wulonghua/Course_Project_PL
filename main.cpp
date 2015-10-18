@@ -25,12 +25,11 @@ int main()
     while(true)
     {
         t = getchar();
-        if(t==std::char_traits<char>::eof())
+        if(t==char_traits<char>::eof())
         {
             break;
         }
-        if(!isspace(t))
-            strExpr.push_back(t);
+        strExpr.push_back(t);
     }
 
     size_t i=0;
@@ -40,12 +39,9 @@ int main()
         TreeNode *root = new TreeNode();
         lp.resetStatus();
         lp.buildBinaryTree(strExpr,i,root);
-        lp.checkInnerNodesList(root);
-        if(lp.getIsAllList())
-            lp.printListExpr(root);
-        else
-            lp.printNodeExpr(root);
-        cout << endl;
+        lp.printExpr(root);
+        if(i<strLen)
+            cout << endl;
         lp.deleteBinaryTree(root);
     }
     return 0;

@@ -21,10 +21,10 @@ string LispParser::getNextToken(string textline,size_t & curIdx)
     try{
         while(curIdx < strLen)
         {
-            // this part actually does not need to be exit, but keep for possible future use.
+            // handle white space
             if(isspace(textline[curIdx]))
             {
-                if(subStrLen > 0)
+                if(subStrLen > 0)  // if the content before white space has numalpha, current token is ended
                     break;
                 else
                     beginIdx = ++curIdx;
@@ -86,7 +86,7 @@ void LispParser::buildBinaryTree(string textline, size_t &curIdx, TreeNode *node
         }
         else
         {
-            if(tk == "(")
+            if(tk == string("("))
             {
                 TreeNode *lchild = new TreeNode();
                 TreeNode *rchild = new TreeNode();
@@ -147,6 +147,15 @@ void LispParser::checkInnerNodesList(TreeNode *node)
                 checkInnerNodesList(node->right);
         }
     }
+}
+
+void LispParser::printExpr(TreeNode *node)
+{
+    checkInnerNodesList(node);
+    if(getIsAllList())
+        printListExpr(node);
+    else
+        printNodeExpr(node);
 }
 
 void LispParser::printNodeExpr(TreeNode *node)

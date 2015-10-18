@@ -39,15 +39,15 @@ public:
     void checkInnerNodesList(TreeNode *node);
     // Always call function checkInnerNodesList before get IsAllList
     bool getIsAllList() {return isAllList;}
-    void printNodeExpr(TreeNode *node);
-    void printListExpr(TreeNode *node);
     void resetStatus();
     void deleteBinaryTree(TreeNode *node);
+    void printExpr(TreeNode *node);
 
 private:
     bool checkIsInnerNode(TreeNode *node) {return (node->left != NULL && node->right != NULL);}
     string getNextToken(string textline, size_t &curIdx);
-
+    void printNodeExpr(TreeNode *node);
+    void printListExpr(TreeNode *node);
 //CLASS MEMBER
 private:
     bool hasLetter;           // determine whether an atom has letter.
