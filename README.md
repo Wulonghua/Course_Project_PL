@@ -6,6 +6,6 @@ I use C++ for my implementation of all projects without relying on any scanner g
 parser generators. (e.g. yacc or CUP) My submissions are compiled and ran in the standad environment on <I>stdlinux</I>.
 
 <h4>Project1</h4>
-to add ...
+<a href="http://web.cse.ohio-state.edu/~rountev/6341/pdf/proj1.pdf" target="_blank">Lexical and syntatic analysis</a>
 
 
