@@ -1,6 +1,6 @@
 #include "lispparser.h"
 
-LispParser::LispParser():hasLetter(false),isAllList(true)
+LispParser::LispParser():hasLetter(false),hasMinusSign(false),isAllList(true)
 {
 
 }
@@ -8,6 +8,7 @@ LispParser::LispParser():hasLetter(false),isAllList(true)
 void LispParser::resetStatus()
 {
     hasLetter = false;
+    hasMinusSign = false;
     isAllList = true;
 }
 
@@ -18,6 +19,7 @@ string LispParser::getNextToken(string textline,size_t & curIdx)
     size_t subStrLen = 0;
     size_t beginIdx = curIdx;
     hasLetter = false;
+    hasMinusSign = false;
     try{
         while(curIdx < strLen)
         {
@@ -47,8 +49,25 @@ string LispParser::getNextToken(string textline,size_t & curIdx)
                     throw runtime_error("US_LL");
                 if(!hasLetter && isalpha(textline[curIdx]))
                     hasLetter = true;
+
                 ++ curIdx;
                 ++ subStrLen;
+            }
+            else if(textline[curIdx] == '-')
+            {
+                if(hasMinusSign)
+                {
+                    throw runtime_error("IM");
+                }
+                else
+                {
+                    if(beginIdx == curIdx)
+                        hasMinusSign = true;
+                    else
+                        throw runtime_error("IM");
+                    ++ curIdx;
+                    ++ subStrLen;
+                }
             }
             else
             {   //ERROR: Unacceptable Symbol!
@@ -61,6 +80,8 @@ string LispParser::getNextToken(string textline,size_t & curIdx)
             // ERROR: Invalid atom which contains letter beginning with digit.
             if(hasLetter && isdigit(textline[beginIdx]))
                 throw runtime_error("ID");
+            if(hasMinusSign && subStrLen == 1)
+                throw runtime_error("IM");
         }
     }catch(runtime_error re)
     {
@@ -70,6 +91,8 @@ string LispParser::getNextToken(string textline,size_t & curIdx)
             cout << "ERROR: Unacceptable symbol-letter in lower case."<<endl;
         else if(re.what() == string("ID"))
             cout << "ERROR: Invalid atom which contains letter beginning with digit." <<endl;
+        else if(re.what() == string("IM"))
+            cout << "ERROR: Invalide atom with minus sign at wrong position.";
         exit(0);
     }
     return strToken;
@@ -92,6 +115,7 @@ void LispParser::buildBinaryTree(string textline, size_t &curIdx, TreeNode *node
                 TreeNode *rchild = new TreeNode();
                 node->left = lchild;
                 node->right = rchild;
+                lchild->rSibling = rchild;
                 buildBinaryTree(textline,curIdx,lchild);
                 //ERROR: missing dot symbol
                 if(getNextToken(textline,curIdx) != string("."))
@@ -156,6 +180,8 @@ void LispParser::printExpr(TreeNode *node)
         printListExpr(node);
     else
         printNodeExpr(node);
+    evaluateExpr(node);
+    cout << endl << node->nodeValue.intValue;
 }
 
 void LispParser::printNodeExpr(TreeNode *node)
@@ -192,4 +218,60 @@ void LispParser::printListExpr(TreeNode *node)
     {
         cout << node->expr;
     }
+}
+
+NodeValue LispParser::evaluateExpr(TreeNode *node)
+{
+    NodeValue node_v;
+    if(!checkIsInnerNode(node))  // exp is an atom (leaf node)
+    {
+        if(node->expr == string("T"))
+        {
+            node_v.vType = BOOL_TYPE;
+            node_v.boolValue = true;
+        }
+        else if(node->expr == string("NIL"))
+        {
+            node_v.vType = BOOL_TYPE;
+            node_v.boolValue = false;
+        }
+        else if(node->expr.find_first_not_of("-0123456789") == string::npos) // the atom represents a number
+        {
+            node_v.vType = INT_TYPE;
+            node_v.intValue = stoi(node->expr);
+        }
+        else if(node->expr == string("PLUS"))
+        {
+            node_v.intValue = evaluateExpr(node->rSibling->left).intValue + evaluateExpr(node->rSibling->right).intValue;
+            node_v.vType = INT_TYPE;
+        }
+        else if(node->expr == string("MINUS"))
+        {
+            node_v.intValue = evaluateExpr(node->rSibling->left).intValue - evaluateExpr(node->rSibling->right).intValue;
+            node_v.vType = INT_TYPE;
+        }
+        else if(node->expr == string("TIMES"))
+        {
+            node_v.intValue = evaluateExpr(node->rSibling->left).intValue * evaluateExpr(node->rSibling->right).intValue;
+            node_v.vType = INT_TYPE;
+        }
+        else if(node->expr == string("QUOTIENT"))
+        {
+            node_v.intValue = evaluateExpr(node->rSibling->left).intValue / evaluateExpr(node->rSibling->right).intValue;
+            node_v.vType = INT_TYPE;
+        }
+        else if(node->expr == string("REMAINDER"))
+        {
+            node_v.intValue = evaluateExpr(node->rSibling->left).intValue % evaluateExpr(node->rSibling->right).intValue;
+            node_v.vType = INT_TYPE;
+        }
+        else
+            throw runtime_error("IAT"); // Error: Invalid Atom
+    }
+    else
+    {
+          node->nodeValue = evaluateExpr(node->left);
+          node_v = node->nodeValue;
+    }
+    return node_v;
 }

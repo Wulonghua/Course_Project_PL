@@ -20,14 +20,26 @@
 
 using namespace std;
 
+enum valueType { BOOL_TYPE, INT_TYPE, NO_TYPE};
+
+struct NodeValue
+{
+    int intValue;
+    bool boolValue;
+    valueType vType;
+    NodeValue() : vType(NO_TYPE) {}
+};
+
 struct TreeNode
 {
     string expr;
     TreeNode *left;
     TreeNode *right;
+    TreeNode *rSibling;
     bool isList;
-    TreeNode() : left(NULL),right(NULL),isList(false) {}
-    TreeNode(string x) : expr(x), left(NULL), right(NULL),isList(false) {}
+    NodeValue nodeValue;
+    TreeNode() : left(NULL),right(NULL),rSibling(NULL),isList(false) {}
+    TreeNode(string x) : expr(x), left(NULL), right(NULL),rSibling(NULL),isList(false) {}
 };
 
 class LispParser
@@ -42,6 +54,7 @@ public:
     void resetStatus();
     void deleteBinaryTree(TreeNode *node);
     void printExpr(TreeNode *node);
+    NodeValue evaluateExpr(TreeNode *node);
 
 private:
     bool checkIsInnerNode(TreeNode *node) {return (node->left != NULL && node->right != NULL);}
@@ -51,6 +64,7 @@ private:
 //CLASS MEMBER
 private:
     bool hasLetter;           // determine whether an atom has letter.
+    bool hasMinusSign;
     bool isAllList;           // determine whether inner nodes' isList attributes are all true
                               // if it is true, print out in list notation,otherwise dot notation
 };

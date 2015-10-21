@@ -17,20 +17,20 @@ using namespace std;
 
 int main()
 {
-    string strExpr;
+    string strExpr="(REMAINDER .(-5.(-3.NIL)))";
     LispParser lp;
     char t;
 
     // put all texts from the inputfile to the string strExpr
-    while(true)
-    {
-        t = getchar();
-        if(t==char_traits<char>::eof())
-        {
-            break;
-        }
-        strExpr.push_back(t);
-    }
+//    while(true)
+//    {
+//        t = getchar();
+//        if(t==char_traits<char>::eof())
+//        {
+//            break;
+//        }
+//        strExpr.push_back(t);
+//    }
 
     size_t i=0;
     size_t strLen = strExpr.length();
