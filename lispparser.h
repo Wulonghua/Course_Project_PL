@@ -35,11 +35,10 @@ struct TreeNode
     string expr;
     TreeNode *left;
     TreeNode *right;
-    TreeNode *rSibling;
     bool isList;
     NodeValue nodeValue;
-    TreeNode() : left(NULL),right(NULL),rSibling(NULL),isList(false) {}
-    TreeNode(string x) : expr(x), left(NULL), right(NULL),rSibling(NULL),isList(false) {}
+    TreeNode() : left(NULL),right(NULL),isList(false) {}
+    TreeNode(string x) : expr(x), left(NULL), right(NULL),isList(false) {}
 };
 
 class LispParser
@@ -54,7 +53,6 @@ public:
     void resetStatus();
     void deleteBinaryTree(TreeNode *node);
     void printExpr(TreeNode *node);
-    NodeValue evaluateExpr(TreeNode *node);
 
 private:
     bool checkIsInnerNode(TreeNode *node) {return (node->left != NULL && node->right != NULL);}

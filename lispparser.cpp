@@ -115,7 +115,6 @@ void LispParser::buildBinaryTree(string textline, size_t &curIdx, TreeNode *node
                 TreeNode *rchild = new TreeNode();
                 node->left = lchild;
                 node->right = rchild;
-                lchild->rSibling = rchild;
                 buildBinaryTree(textline,curIdx,lchild);
                 //ERROR: missing dot symbol
                 if(getNextToken(textline,curIdx) != string("."))
@@ -180,8 +179,6 @@ void LispParser::printExpr(TreeNode *node)
         printListExpr(node);
     else
         printNodeExpr(node);
-    evaluateExpr(node);
-    cout << endl << node->nodeValue.intValue;
 }
 
 void LispParser::printNodeExpr(TreeNode *node)
@@ -218,60 +215,4 @@ void LispParser::printListExpr(TreeNode *node)
     {
         cout << node->expr;
     }
-}
-
-NodeValue LispParser::evaluateExpr(TreeNode *node)
-{
-    NodeValue node_v;
-    if(!checkIsInnerNode(node))  // exp is an atom (leaf node)
-    {
-        if(node->expr == string("T"))
-        {
-            node_v.vType = BOOL_TYPE;
-            node_v.boolValue = true;
-        }
-        else if(node->expr == string("NIL"))
-        {
-            node_v.vType = BOOL_TYPE;
-            node_v.boolValue = false;
-        }
-        else if(node->expr.find_first_not_of("-0123456789") == string::npos) // the atom represents a number
-        {
-            node_v.vType = INT_TYPE;
-            node_v.intValue = stoi(node->expr);
-        }
-        else if(node->expr == string("PLUS"))
-        {
-            node_v.intValue = evaluateExpr(node->rSibling->left).intValue + evaluateExpr(node->rSibling->right).intValue;
-            node_v.vType = INT_TYPE;
-        }
-        else if(node->expr == string("MINUS"))
-        {
-            node_v.intValue = evaluateExpr(node->rSibling->left).intValue - evaluateExpr(node->rSibling->right).intValue;
-            node_v.vType = INT_TYPE;
-        }
-        else if(node->expr == string("TIMES"))
-        {
-            node_v.intValue = evaluateExpr(node->rSibling->left).intValue * evaluateExpr(node->rSibling->right).intValue;
-            node_v.vType = INT_TYPE;
-        }
-        else if(node->expr == string("QUOTIENT"))
-        {
-            node_v.intValue = evaluateExpr(node->rSibling->left).intValue / evaluateExpr(node->rSibling->right).intValue;
-            node_v.vType = INT_TYPE;
-        }
-        else if(node->expr == string("REMAINDER"))
-        {
-            node_v.intValue = evaluateExpr(node->rSibling->left).intValue % evaluateExpr(node->rSibling->right).intValue;
-            node_v.vType = INT_TYPE;
-        }
-        else
-            throw runtime_error("IAT"); // Error: Invalid Atom
-    }
-    else
-    {
-          node->nodeValue = evaluateExpr(node->left);
-          node_v = node->nodeValue;
-    }
-    return node_v;
 }
