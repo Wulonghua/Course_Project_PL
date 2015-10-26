@@ -5,6 +5,11 @@ LispParser::LispParser():hasLetter(false),hasMinusSign(false),isAllList(true)
 
 }
 
+LispParser::~LispParser()
+{
+
+}
+
 void LispParser::resetStatus()
 {
     hasLetter = false;
@@ -148,12 +153,24 @@ void LispParser::buildBinaryTree(string textline, size_t &curIdx, TreeNode *node
 
 void LispParser::deleteBinaryTree(TreeNode *node)
 {
-  if(node->left != NULL)
-      deleteBinaryTree(node->left);
-  if(node->right != NULL)
-      deleteBinaryTree(node->right);
-  if(node->left == NULL && node->right == NULL)
-      delete node;
+	if (node != NULL)
+	{
+		if (node->left != NULL)
+		{
+			deleteBinaryTree(node->left);
+			node->left = NULL;
+		}
+		if (node->right != NULL)
+		{
+			deleteBinaryTree(node->right);
+			node->right = NULL;
+		}
+		if (node->left == NULL && node->right == NULL)
+		{
+			delete node;
+			node = NULL;
+		}
+	}
 }
 
 void LispParser::checkInnerNodesList(TreeNode *node)
@@ -174,6 +191,9 @@ void LispParser::checkInnerNodesList(TreeNode *node)
 
 void LispParser::printExpr(TreeNode *node)
 {
+//    vector<int> flags;
+//    testPrint(node,flags);
+//    cout << endl;
     checkInnerNodesList(node);
     if(getIsAllList())
         printListExpr(node);
@@ -215,4 +235,55 @@ void LispParser::printListExpr(TreeNode *node)
     {
         cout << node->expr;
     }
+}
+
+void LispParser::testPrint(TreeNode *node, vector<int> orders)
+{
+    if(node!=NULL)
+    {
+        if(!checkIsInnerNode(node))
+        {
+            std::copy(orders.begin(),orders.end(),std::ostream_iterator<int>(std::cout<< "->" ));
+            cout << ":" << node->expr << " "<<endl;
+        }
+        else
+        {
+            if(node->left!=NULL)
+            {
+                orders.push_back(0);
+                testPrint(node->left,orders);
+                orders.pop_back();
+            }
+
+            if(node->right!=NULL)
+            {
+                orders.push_back(1);
+                testPrint(node->right,orders);
+                orders.pop_back();
+            }
+        }
+    }
+}
+
+void LispParser::updateIsList(TreeNode *node)
+{
+    if(node == NULL)
+        return;
+    if(node->right != NULL)
+    {
+        if(!checkIsInnerNode(node->right) )
+        {
+            if(node->right->expr == string("NIL"))
+                node->right->isList = true;
+            else
+                node->right->isList = false;
+        }
+        else
+        {
+            updateIsList(node->right);
+        }
+        node->isList = node->right->isList;
+    }
+    if(node->left !=NULL)
+        updateIsList(node->left);
 }

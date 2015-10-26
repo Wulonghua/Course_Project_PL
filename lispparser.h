@@ -14,7 +14,9 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <locale>
+#include <iterator>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -46,6 +48,7 @@ class LispParser
 //FUNCTION
 public:
     LispParser();
+    ~LispParser();
     void buildBinaryTree(string textline, size_t &curIdx, TreeNode *node);
     void checkInnerNodesList(TreeNode *node);
     // Always call function checkInnerNodesList before get IsAllList
@@ -53,12 +56,14 @@ public:
     void resetStatus();
     void deleteBinaryTree(TreeNode *node);
     void printExpr(TreeNode *node);
+    void updateIsList(TreeNode *node);
+    bool checkIsInnerNode(TreeNode *node) {return (node->left != NULL || node->right != NULL);}
 
 private:
-    bool checkIsInnerNode(TreeNode *node) {return (node->left != NULL && node->right != NULL);}
     string getNextToken(string textline, size_t &curIdx);
     void printNodeExpr(TreeNode *node);
     void printListExpr(TreeNode *node);
+    void testPrint(TreeNode *node, vector<int> orders);
 //CLASS MEMBER
 private:
     bool hasLetter;           // determine whether an atom has letter.
