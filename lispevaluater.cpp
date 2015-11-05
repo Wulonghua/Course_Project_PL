@@ -306,8 +306,10 @@ void LispEvaluater::computeCond(TreeNode *root)
 	if (node->left->left->nodeValue.vType != BOOL_TYPE)
 		throw runtime_error("WT_COND");
 
+    evaluateExpr(node->left->left);
     if(node->left->left->nodeValue.boolValue)
     {
+        evaluateExpr(node->left->right->left);
         root->right = node->left->right->left;
         node->left->right->left = NULL;
         lp->deleteBinaryTree(node);
