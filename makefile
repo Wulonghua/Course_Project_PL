@@ -1,7 +1,7 @@
 CC = g++
 CFLAGS = -Wall -c
 LFLAGS = -Wall
-SOURCES = main.cpp lispparser.cpp
+SOURCES = main.cpp lispparser.cpp lispevaluater.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 EXECUTABLE = FPL
 

@@ -7,12 +7,14 @@
 *  lexical and syntatic analysis, and output the results in required format.
 *
 *  Date: 10/01/2015
+*  Modified : 10/27/2015    description: fixed bug
 *  Author: Longhua Wu
 *************************************************************************************/
 #ifndef LISPPARSER_H
 #define LISPPARSER_H
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <locale>
@@ -51,6 +53,7 @@ public:
     ~LispParser();
     void buildBinaryTree(string textline, size_t &curIdx, TreeNode *node);
     void checkInnerNodesList(TreeNode *node);
+	bool IsList(TreeNode *node);
     // Always call function checkInnerNodesList before get IsAllList
     bool getIsAllList() {return isAllList;}
     void resetStatus();
@@ -58,12 +61,14 @@ public:
     void printExpr(TreeNode *node);
     void updateIsList(TreeNode *node);
     bool checkIsInnerNode(TreeNode *node) {return (node->left != NULL || node->right != NULL);}
+    void testPrint(TreeNode *node, vector<int> orders);
+    string int2str(int num);
 
 private:
     string getNextToken(string textline, size_t &curIdx);
     void printNodeExpr(TreeNode *node);
     void printListExpr(TreeNode *node);
-    void testPrint(TreeNode *node, vector<int> orders);
+
 //CLASS MEMBER
 private:
     bool hasLetter;           // determine whether an atom has letter.

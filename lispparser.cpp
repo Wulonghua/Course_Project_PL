@@ -25,80 +25,67 @@ string LispParser::getNextToken(string textline,size_t & curIdx)
     size_t beginIdx = curIdx;
     hasLetter = false;
     hasMinusSign = false;
-    try{
-        while(curIdx < strLen)
+    while(curIdx < strLen)
+    {
+        // handle white space
+        if(isspace(textline[curIdx]))
         {
-            // handle white space
-            if(isspace(textline[curIdx]))
-            {
-                if(subStrLen > 0)  // if the content before white space has numalpha, current token is ended
-                    break;
-                else
-                    beginIdx = ++curIdx;
-            }
-            else if(textline[curIdx] == '(' ||
-                    textline[curIdx] == ')' ||
-                    textline[curIdx] == '.' )
-            {
-                if(subStrLen == 0)
-                {
-                    strToken = string(1,textline[curIdx]);
-                    ++ curIdx;
-                }
+            if(subStrLen > 0)  // if the content before white space has numalpha, current token is ended
                 break;
-            }
-            else if(isalnum(textline[curIdx]))
+            else
+                beginIdx = ++curIdx;
+        }
+        else if(textline[curIdx] == '(' ||
+                textline[curIdx] == ')' ||
+                textline[curIdx] == '.' )
+        {
+            if(subStrLen == 0)
             {
-                //ERROR: Unacceptable Symbol---letter in lower case.
-                if(islower(textline[curIdx]))
-                    throw runtime_error("US_LL");
-                if(!hasLetter && isalpha(textline[curIdx]))
-                    hasLetter = true;
+                strToken = string(1,textline[curIdx]);
+                ++ curIdx;
+            }
+            break;
+        }
+        else if(isalnum(textline[curIdx]))
+        {
+            //ERROR: Unacceptable Symbol---letter in lower case.
+            if(islower(textline[curIdx]))
+                throw runtime_error("US_LL");
+            if(!hasLetter && isalpha(textline[curIdx]))
+                hasLetter = true;
 
+            ++ curIdx;
+            ++ subStrLen;
+        }
+        else if(textline[curIdx] == '-')
+        {
+            if(hasMinusSign)
+            {
+                throw runtime_error("IM");
+            }
+            else
+            {
+                if(beginIdx == curIdx)
+                    hasMinusSign = true;
+                else
+                    throw runtime_error("IM");
                 ++ curIdx;
                 ++ subStrLen;
             }
-            else if(textline[curIdx] == '-')
-            {
-                if(hasMinusSign)
-                {
-                    throw runtime_error("IM");
-                }
-                else
-                {
-                    if(beginIdx == curIdx)
-                        hasMinusSign = true;
-                    else
-                        throw runtime_error("IM");
-                    ++ curIdx;
-                    ++ subStrLen;
-                }
-            }
-            else
-            {   //ERROR: Unacceptable Symbol!
-                throw runtime_error("US");
-            }
         }
-        if(subStrLen > 0)
-        {
-            strToken = textline.substr(beginIdx,subStrLen);
-            // ERROR: Invalid atom which contains letter beginning with digit.
-            if(hasLetter && isdigit(textline[beginIdx]))
-                throw runtime_error("ID");
-            if(hasMinusSign && subStrLen == 1)
-                throw runtime_error("IM");
+        else
+        {   //ERROR: Unacceptable Symbol!
+            throw runtime_error("US");
         }
-    }catch(runtime_error re)
+    }
+    if(subStrLen > 0)
     {
-        if(re.what() == string("US"))
-            cout << "ERROR: Unaccecptable symbol."<< endl;
-        else if(re.what() == string("US_LL"))
-            cout << "ERROR: Unacceptable symbol-letter in lower case."<<endl;
-        else if(re.what() == string("ID"))
-            cout << "ERROR: Invalid atom which contains letter beginning with digit." <<endl;
-        else if(re.what() == string("IM"))
-            cout << "ERROR: Invalide atom with minus sign at wrong position.";
-        exit(0);
+        strToken = textline.substr(beginIdx,subStrLen);
+        // ERROR: Invalid atom which contains letter beginning with digit.
+        if(hasLetter && isdigit(textline[beginIdx]))
+            throw runtime_error("ID");
+        if(hasMinusSign && subStrLen == 1)
+            throw runtime_error("IM");
     }
     return strToken;
 }
@@ -106,71 +93,74 @@ string LispParser::getNextToken(string textline,size_t & curIdx)
 void LispParser::buildBinaryTree(string textline, size_t &curIdx, TreeNode *node)
 {
     string tk = getNextToken(textline,curIdx);
-    try{
-        if(tk == string(".") || tk == string(")"))
+    if(tk == string(".") || tk == string(")"))
+    {
+        //ERROR: missing atom or openparenthesis.
+        throw runtime_error("MAO");
+    }
+    else
+    {
+        if(tk == string("("))
         {
-            //ERROR: missing atom or openparenthesis.
-            throw runtime_error("MAO");
+            TreeNode *lchild = new TreeNode();
+            TreeNode *rchild = new TreeNode();
+            node->left = lchild;
+            node->right = rchild;
+            buildBinaryTree(textline,curIdx,lchild);
+            //ERROR: missing dot symbol
+            if(getNextToken(textline,curIdx) != string("."))
+                throw runtime_error("MDOT");
+            buildBinaryTree(textline,curIdx,rchild);
+            if(rchild->isList)
+                node->isList = true;
+            //ERROR: missing closeparenthesis
+            if(getNextToken(textline,curIdx) != string(")"))
+                throw runtime_error("MCLO");
         }
         else
         {
-            if(tk == string("("))
-            {
-                TreeNode *lchild = new TreeNode();
-                TreeNode *rchild = new TreeNode();
-                node->left = lchild;
-                node->right = rchild;
-                buildBinaryTree(textline,curIdx,lchild);
-                //ERROR: missing dot symbol
-                if(getNextToken(textline,curIdx) != string("."))
-                    throw runtime_error("MDOT");
-                buildBinaryTree(textline,curIdx,rchild);
-                if(rchild->isList)
-                    node->isList = true;
-                //ERROR: missing closeparenthesis
-                if(getNextToken(textline,curIdx) != string(")"))
-                    throw runtime_error("MCLO");
-            }
-            else
-            {
-                node->expr = tk;
-                if(tk == string("NIL"))
-                    node->isList = true;
-                return;
-            }
+            node->expr = tk;
+			if (tk == string("NIL"))
+			{
+				node->isList = true;
+				node->nodeValue.vType = BOOL_TYPE;
+				node->nodeValue.boolValue = false;
+			}
+			else if (tk == string("T"))
+			{
+				node->nodeValue.vType = BOOL_TYPE;
+				node->nodeValue.boolValue = true;
+			}
+			else if (tk.find_first_not_of("-0123456789") == string::npos)
+			{
+				node->nodeValue.vType = INT_TYPE;
+				node->nodeValue.intValue = atoi(tk.c_str());
+			}
+			return;
         }
-    }catch(runtime_error re)
-    {
-        if(re.what()==string("MDOT"))
-            cout << "ERROR: missing dot symbol" <<endl;
-        else if(re.what()==string("MCLO"))
-            cout << "ERROR: missing closeparenthesis" <<endl;
-        else if(re.what()==string("MAO"))
-            cout << "ERROR: missing atom or openparenthesis"<<endl;
-        exit(0);
     }
 }
 
 void LispParser::deleteBinaryTree(TreeNode *node)
 {
-	if (node != NULL)
-	{
-		if (node->left != NULL)
-		{
-			deleteBinaryTree(node->left);
-			node->left = NULL;
-		}
-		if (node->right != NULL)
-		{
-			deleteBinaryTree(node->right);
-			node->right = NULL;
-		}
-		if (node->left == NULL && node->right == NULL)
-		{
-			delete node;
-			node = NULL;
-		}
-	}
+    if (node != NULL)
+    {
+        if (node->left != NULL)
+        {
+            deleteBinaryTree(node->left);
+            node->left = NULL;
+        }
+        if (node->right != NULL)
+        {
+            deleteBinaryTree(node->right);
+            node->right = NULL;
+        }
+        if (node->left == NULL && node->right == NULL)
+        {
+            delete node;
+            node = NULL;
+        }
+    }
 }
 
 void LispParser::checkInnerNodesList(TreeNode *node)
@@ -191,9 +181,9 @@ void LispParser::checkInnerNodesList(TreeNode *node)
 
 void LispParser::printExpr(TreeNode *node)
 {
-//    vector<int> flags;
-//    testPrint(node,flags);
-//    cout << endl;
+    //    vector<int> flags;
+    //    testPrint(node,flags);
+    //    cout << endl;
     checkInnerNodesList(node);
     if(getIsAllList())
         printListExpr(node);
@@ -287,3 +277,11 @@ void LispParser::updateIsList(TreeNode *node)
     if(node->left !=NULL)
         updateIsList(node->left);
 }
+
+string LispParser::int2str(int num)
+{
+        ostringstream oss;
+        oss << num;
+        return oss.str();
+}
+
