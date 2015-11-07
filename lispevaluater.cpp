@@ -60,6 +60,20 @@ void LispEvaluater::evaluateExpr(TreeNode *node)
              delete temp1;
              delete temp2;
         }
+        else if(node->left->expr == string("DEFUN"))
+        {
+            string func_name = node->right->left->expr;
+            if(func_name == string("CAR")||func_name == string("CDR")||
+               func_name == string("CONS")||func_name == string("ATOM")||
+               func_name == string("EQ")||func_name == string("NULL")||
+               func_name == string("INT")||func_name == string("PLUS")||
+               func_name == string("MINUS")||func_name == string("TIMES")||
+               func_name == string("QUOTIENT")||func_name == string("REMAINDER")||
+               func_name == string("LESS")||func_name == string("GREATER")||
+               func_name == string("COND")||func_name == string("QUOTE")||func_name == string("DEFUN"))
+            throw runtime_error("CF_DF");
+
+        }
         else
         {
             TreeNode *temp1= node->left;
@@ -164,6 +178,8 @@ TreeNode* LispEvaluater::applyFunction(TreeNode *node, TreeNode *node_para)
 		bool flag = false;
         if(node_func->expr == string("EQ"))
         {
+            if((!checkIsAtom(node_para->left)) || (!checkIsAtom(node_para->right->left)))
+                throw runtime_error("WT_EQ");
             flag = (node_para->left->expr == node_para->right->left->expr) ? true : false;
         }
         else if(node_func->expr == string("LESS"))
@@ -298,15 +314,13 @@ void LispEvaluater::computeCond(TreeNode *root)
 	if (checkIsAtom(node) && node->expr == string("NIL"))
 		throw runtime_error("UD_COND"); // missing argument
 	if (node->left == NULL ||
-		node->left->left == NULL)
+        node->left->left == NULL||
+        node->left->right->left == NULL||
+        node->left->right->right->expr != string("NIL"))
 		throw runtime_error("WA_COND");
     evaluateExpr(node->left->left);
-	if (node->left->right->left == NULL)
-		throw runtime_error("WA_COND");
 	if (node->left->left->nodeValue.vType != BOOL_TYPE)
 		throw runtime_error("WT_COND");
-
-    evaluateExpr(node->left->left);
     if(node->left->left->nodeValue.boolValue)
     {
         evaluateExpr(node->left->right->left);

@@ -16,4 +16,4 @@ $(EXECUTABLE): $(OBJECTS)
 .PHONY: clean
 
 clean:
-	rm -f *.o 
+	rm -f *.o *~ FPL 

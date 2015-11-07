@@ -27,16 +27,15 @@ int main()
  //   (NULL.(5.NIL))
  //   (PLUS.((PLUS.(1.(2.NIL))).(3.NIL)))
  //   (CAR.((QUOTE.((7.(8.NIL)).NIL)).NIL))
- //   (CDR.((QUOTE.((7.(8.NIL)).NIL)).NIL))
- //   (CONS.(7.(10.NIL)))
+    //(CDR.((QUOTE.((7.(8.NIL)).NIL)).NIL))
+    //(CONS.(7.(10.NIL)))
 	//(CONS.((QUOTE.((7.9).NIL)).(10.NIL)))
 	//(CONS.((TIMES.((QUOTIENT.(5.(3.NIL))).(3.NIL))).((REMAINDER.(5.(3.NIL))).NIL)))
- //   (REMAINDER.(5.(-2.NIL)))
- //   (PLUS.((TIMES.((QUOTIENT.(5.(3.NIL))).(3.NIL))).((REMAINDER.(5.(3.NIL))).NIL)))
- //   (LESS.((PLUS.(2.(3.NIL))).(6.NIL)))
- //   (COND.(((EQ.(3.(4.NIL))).((8.9).NIL)).((T.((6.7).NIL)).NIL)))
+    //(REMAINDER.(5.(-2.NIL)))
+    //(PLUS.((TIMES.((QUOTIENT.(5.(3.NIL))).(3.NIL))).((REMAINDER.(5.(3.NIL))).NIL)))
+    //(LESS.((PLUS.(2.(3.NIL))).(6.NIL)))
+    //(COND.(((EQ.(3.(4.NIL))).(9.NIL)).((T.(7.NIL)).NIL)))
 	//(PLUS.((QUOTE.(5.NIL)).(2.NIL)))
-
 	// INVALID TEST CASES
 	//(5.6)
  //   (COND.NIL)
@@ -55,6 +54,8 @@ int main()
 	//(COND.(((EQ.(3.(4.NIL))).((8.9).NIL)).((NIL.((6.7).NIL)).NIL)))
 	//(COND.(((PLUS.(3.(4.NIL))).((8.9).NIL)).((NIL.((6.7).NIL)).NIL)))
 	//(COND.(EQ.(3.(4.NIL))))
+    //(EQ.((QUOTE.((5.NIL).NIL)).(5.NIL)))
+    //(COND.((NIL.(5.NIL)).((T.(6.(7.NIL))).NIL)))
     string strExpr;
     LispParser *lp = new LispParser();
     LispEvaluater *le = new LispEvaluater(lp);
@@ -89,7 +90,9 @@ int main()
     }catch(runtime_error re)
     {
         cout << "ERROR: ";
-        if(re.what() == string("ID"))
+        if(re.what() == string("CF_DF"))
+            cout << "Conflic name of self-defined function.";
+        else if(re.what() == string("ID"))
             cout << "Invalid atom which contains letter beginning with digit." ;
         else if(re.what() == string("IM"))
             cout << "Invalide atom with minus sign at wrong position.";
@@ -149,6 +152,8 @@ int main()
 			cout << "Argument of QUOTE is wrong.";
 		else if (re.what() == string("WT_AF"))
 			cout << "Arguments of arithmetic functions should be integers";
+        else if (re.what() == string("WT_EQ"))
+            cout << "Arguments of EQ should be atoms";
 		else if (re.what() == string("WT_COND"))
 			cout << "Conditions of COND should be booleans.";
 		else if (re.what() == string("WT_GREATER"))
