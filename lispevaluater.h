@@ -22,14 +22,16 @@ class LispEvaluater
 public:
     LispEvaluater(LispParser *lisp_parser);
     virtual ~LispEvaluater();
-    void evaluateExpr(TreeNode *node);
+    bool evaluateExpr(TreeNode *node);
 
 private:
     bool checkIsAtom(TreeNode *node) {return !lp->checkIsInnerNode(node);}
-
     TreeNode* applyFunction(TreeNode *node,TreeNode *node_para);
     TreeNode* generateEvList(TreeNode *node);
     void computeCond(TreeNode *root);
+    void addValuePair(TreeNode *formal, TreeNode *actual);
+
+private:
     LispParser *lp;
 
 };

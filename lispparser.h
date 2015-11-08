@@ -21,6 +21,7 @@
 #include <iterator>
 #include <cstdlib>
 #include <stdexcept>
+#include <map>
 
 using namespace std;
 
@@ -57,12 +58,19 @@ public:
     // Always call function checkInnerNodesList before get IsAllList
     bool getIsAllList() {return isAllList;}
     void resetStatus();
-    void deleteBinaryTree(TreeNode *node);
+    void deleteBinaryTree(TreeNode*node);
     void printExpr(TreeNode *node);
     void updateIsList(TreeNode *node);
-    bool checkIsInnerNode(TreeNode *node) {return (node->left != NULL || node->right != NULL);}
     void testPrint(TreeNode *node, vector<int> orders);
+    void testPrintDList();
+    void testPrintAList();
     string int2str(int num);
+    void copyTree(TreeNode *node, TreeNode *node_cpy);
+    bool checkIsInnerNode(TreeNode *node) {return (node->left != NULL || node->right != NULL);}
+
+public:
+    map<string,TreeNode*> dlistMap;
+    map<string,TreeNode*> alistMap;
 
 private:
     string getNextToken(string textline, size_t &curIdx);

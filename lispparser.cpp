@@ -120,23 +120,23 @@ void LispParser::buildBinaryTree(string textline, size_t &curIdx, TreeNode *node
         else
         {
             node->expr = tk;
-			if (tk == string("NIL"))
-			{
-				node->isList = true;
-				node->nodeValue.vType = BOOL_TYPE;
-				node->nodeValue.boolValue = false;
-			}
-			else if (tk == string("T"))
-			{
-				node->nodeValue.vType = BOOL_TYPE;
-				node->nodeValue.boolValue = true;
-			}
-			else if (tk.find_first_not_of("-0123456789") == string::npos)
-			{
-				node->nodeValue.vType = INT_TYPE;
-				node->nodeValue.intValue = atoi(tk.c_str());
-			}
-			return;
+            if (tk == string("NIL"))
+            {
+                node->isList = true;
+                node->nodeValue.vType = BOOL_TYPE;
+                node->nodeValue.boolValue = false;
+            }
+            else if (tk == string("T"))
+            {
+                node->nodeValue.vType = BOOL_TYPE;
+                node->nodeValue.boolValue = true;
+            }
+            else if (tk.find_first_not_of("-0123456789") == string::npos)
+            {
+                node->nodeValue.vType = INT_TYPE;
+                node->nodeValue.intValue = atoi(tk.c_str());
+            }
+            return;
         }
     }
 }
@@ -158,7 +158,7 @@ void LispParser::deleteBinaryTree(TreeNode *node)
         if (node->left == NULL && node->right == NULL)
         {
             delete node;
-            node = NULL;
+            node = NULL; // this will not actually assign node to NULL !!!
         }
     }
 }
@@ -184,6 +184,8 @@ void LispParser::printExpr(TreeNode *node)
     //    vector<int> flags;
     //    testPrint(node,flags);
     //    cout << endl;
+    if(node==NULL)
+        return;
     checkInnerNodesList(node);
     if(getIsAllList())
         printListExpr(node);
@@ -280,8 +282,52 @@ void LispParser::updateIsList(TreeNode *node)
 
 string LispParser::int2str(int num)
 {
-        ostringstream oss;
-        oss << num;
-        return oss.str();
+    ostringstream oss;
+    oss << num;
+    return oss.str();
 }
 
+void LispParser::testPrintDList()
+{
+    cout <<"Size of dlist: "<<dlistMap.size()<<endl;
+    for(map<string,TreeNode*>::iterator iter= dlistMap.begin(); iter != dlistMap.end(); ++iter)
+    {
+        updateIsList((*iter).second);
+        printExpr((*iter).second);
+        cout << endl;
+    }
+}
+
+void LispParser::testPrintAList()
+{
+    if(alistMap.size()==0)
+        return;
+    else
+        cout << "Size of alist: "<<alistMap.size()<<endl;
+
+    for(map<string,TreeNode*>::iterator iter= alistMap.begin(); iter != alistMap.end(); ++iter)
+    {
+        updateIsList((*iter).second);
+        printExpr((*iter).second);
+        cout << endl;
+    }
+}
+
+void LispParser::copyTree(TreeNode *node, TreeNode *node_cpy)
+{
+    node_cpy->expr = node->expr;
+    node_cpy->nodeValue = node->nodeValue;
+    if(node->left != NULL)
+    {
+        TreeNode *lt = new TreeNode();
+        copyTree(node->left,lt);
+        node_cpy->left = lt;
+
+    }
+    if(node->right != NULL)
+    {
+        TreeNode *rt = new TreeNode();
+        copyTree(node->right,rt);
+        node_cpy->right = rt;
+    }
+}
