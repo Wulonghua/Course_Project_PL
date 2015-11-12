@@ -143,9 +143,10 @@ void LispEvaluater::evaluateExpr(TreeNode *node, map<string,TreeNode*> alistMap)
         {
             TreeNode *temp1= node->left;
             //TreeNode *temp2 = node->right;
-                      vector<int> flags;
+            //vector<int> flags;
                       //lp->testPrint(temp2,flags);
                       //cout << endl;
+			checkParaNum(node->left->expr,node->right);
             *node =*applyFunction(node,generateEvList(node->right,alistMap));
 //                      flags.clear();
 //                      lp->testPrint(node,flags);
@@ -202,10 +203,10 @@ TreeNode* LispEvaluater::applyFunction(TreeNode *node, TreeNode *node_para)
        node_func->expr == string("INT")  ||
        node_func->expr == string("NULL"))
     {
-        if(node_para->left == NULL)
-            throw runtime_error(string("WA_")+node_func->expr);
-		if (node_para->right->expr != string("NIL"))
-			throw runtime_error(string("NL_")+node_func->expr);
+  //      if(node_para->left == NULL)
+  //          throw runtime_error(string("WA_")+node_func->expr);
+		//if (node_para->right->expr != string("NIL"))
+		//	throw runtime_error(string("NL_")+node_func->expr);
 		
 		bool flag = false;
 		node_para->nodeValue.vType = BOOL_TYPE;
@@ -234,12 +235,12 @@ TreeNode* LispEvaluater::applyFunction(TreeNode *node, TreeNode *node_para)
             node_func->expr == string("LESS")||
             node_func->expr == string("GREATER"))
     {
-		if (node_para->left == NULL ||
-			node_para->right == NULL ||
-			node_para->right->left == NULL)
-			throw runtime_error(string("WA_CO"));
-		if (node_para->right->right->expr != string("NIL"))
-			throw runtime_error(string("NL_CO"));
+		//if (node_para->left == NULL ||
+		//	node_para->right == NULL ||
+		//	node_para->right->left == NULL)
+		//	throw runtime_error(string("WA_CO"));
+		//if (node_para->right->right->expr != string("NIL"))
+		//	throw runtime_error(string("NL_CO"));
 		bool flag = false;
         if(node_func->expr == string("EQ"))
         {
@@ -282,12 +283,12 @@ TreeNode* LispEvaluater::applyFunction(TreeNode *node, TreeNode *node_para)
             node_func->expr == string("QUOTIENT")||
             node_func->expr == string("REMAINDER"))
     {
-		if (node_para->left == NULL ||
-			node_para->right == NULL ||
-			node_para->right->left == NULL)
-			throw runtime_error(string("WA_AF"));
-		if (node_para->right->right->expr != string("NIL"))
-			throw runtime_error(string("NL_AF"));
+		//if (node_para->left == NULL ||
+		//	node_para->right == NULL ||
+		//	node_para->right->left == NULL)
+		//	throw runtime_error(string("WA_AF"));
+		//if (node_para->right->right->expr != string("NIL"))
+		//	throw runtime_error(string("NL_AF"));
 		if (node_para->left->nodeValue.vType != INT_TYPE || node_para->right->left->nodeValue.vType != INT_TYPE)
 			throw runtime_error("WT_AF");
 
@@ -315,16 +316,11 @@ TreeNode* LispEvaluater::applyFunction(TreeNode *node, TreeNode *node_para)
     }
     else if(node_func->expr == string("CAR"))
     {
-		if (node_para->left == NULL ||
-			node_para->left->left == NULL)
+		 if (node_para->left == NULL ||      // the first condition has been checked in checkParaNum
+			 node_para->left->left == NULL)
 			throw runtime_error("WA_CAR");
-		if (node_para->right->expr != string("NIL"))
-			throw runtime_error("NL_CAR");
-		// check whether argument is a list
-		//lp->updateIsList(node_para->left);
-		//lp->checkInnerNodesList(node_para->left);
-		//if (!lp->getIsAllList())
-		//	throw runtime_error("NLA_CAR");
+		//if (node_para->right->expr != string("NIL"))
+		//	throw runtime_error("NL_CAR");
 		node->right = node_para->left->left;
         node_para->left->left = NULL;
         //lp->deleteBinaryTree(node_para);
@@ -332,17 +328,11 @@ TreeNode* LispEvaluater::applyFunction(TreeNode *node, TreeNode *node_para)
     }
     else if(node_func->expr == string("CDR"))
     {
-		if (node_para->left == NULL ||
-			node_para->left->right == NULL)
+		 if (node_para->left == NULL ||           // the first condition has been checked in checkParaNum
+			 node_para->left->right == NULL)
 			throw runtime_error("WA_CDR");
-		if (node_para->right->expr != string("NIL"))
-			throw runtime_error("NL_CDR");
-		// check whether argument is a list
-		//lp->updateIsList(node_para->left);
-		//lp->checkInnerNodesList(node_para->left);
-		//if (!lp->getIsAllList())
-		//	throw runtime_error("NLA_CDR");
-
+		//if (node_para->right->expr != string("NIL"))
+		//	throw runtime_error("NL_CDR");
         node->right = node_para->left->right;
         node_para->left->right = NULL;
         //lp->deleteBinaryTree(node_para);
@@ -350,14 +340,11 @@ TreeNode* LispEvaluater::applyFunction(TreeNode *node, TreeNode *node_para)
     }
     else if(node_func->expr == string("CONS"))
     {
-        //        vector<int> flags;
-        //        testPrint(node_para,flags);
-        //        cout << endl;
-		if (node_para->right == NULL ||
-			node_para->right->left == NULL)
-			throw runtime_error("WA_CONS");
-		if (node_para->right->right->expr != string("NIL"))
-			throw runtime_error("NL_CONS");
+		//if (node_para->right == NULL ||
+		//	node_para->right->left == NULL)
+		//	throw runtime_error("WA_CONS");
+		//if (node_para->right->right->expr != string("NIL"))
+		//	throw runtime_error("NL_CONS");
         TreeNode *tmp = node_para->right;
         node_para->right = node_para->right->left;
         tmp->left = NULL;
@@ -384,11 +371,10 @@ TreeNode* LispEvaluater::applyFunction(TreeNode *node, TreeNode *node_para)
         //lp->testPrint(func_body_cpy,flag);
         return func_body_cpy;
     }
-    else
-    {
-		cout << "func name: " << node_func->expr << endl;
-        throw runtime_error("UF"); // ERROR: Unrecognized function
-    }
+    //else
+    //{
+    //    throw runtime_error("UF"); // ERROR: Unrecognized function
+    //}
     return node_para;
 }
 
@@ -435,10 +421,90 @@ void LispEvaluater::addValuePair(TreeNode *formal, TreeNode *actual, map<string,
 
         formal = formal->right;
         actual = actual->right;
-        addValuePair(formal,actual,listpair);
+        //addValuePair(formal,actual,listpair);
     }
 	if (actual->expr != string("NIL"))
 		throw runtime_error("WA_SDF");
+}
+
+void LispEvaluater::checkParaNum(string func_name, TreeNode* node_para)
+{
+	if (func_name == string("ATOM") ||
+		func_name == string("INT")  ||
+		func_name == string("NULL"))
+	{
+		if (node_para->left == NULL)
+			throw runtime_error(string("WA_") + func_name);
+		if (node_para->right->expr != string("NIL"))
+			throw runtime_error(string("NL_") + func_name);
+	}
+	else if (func_name == string("EQ")   ||
+			 func_name == string("LESS") ||
+			 func_name == string("GREATER"))
+	{
+		if (node_para->left == NULL ||
+			node_para->right == NULL ||
+			node_para->right->left == NULL)
+			throw runtime_error(string("WA_CO"));
+		if (node_para->right->right->expr != string("NIL"))
+			throw runtime_error(string("NL_CO"));
+	}
+	else if (func_name == string("PLUS") ||
+		func_name == string("MINUS") ||
+		func_name == string("TIMES") ||
+		func_name == string("QUOTIENT") ||
+		func_name == string("REMAINDER"))
+	{
+		if (node_para->left == NULL ||
+			node_para->right == NULL ||
+			node_para->right->left == NULL)
+			throw runtime_error(string("WA_AF"));
+		if (node_para->right->right->expr != string("NIL"))
+			throw runtime_error(string("NL_AF"));
+	}
+	else if (func_name == string("CAR"))
+	{
+		if (node_para->left == NULL)
+			throw runtime_error("WA_CAR");
+		if (node_para->right->expr != string("NIL"))
+			throw runtime_error("NL_CAR");
+	}
+	else if (func_name == string("CDR"))
+	{
+		if (node_para->left == NULL)
+			throw runtime_error("WA_CDR");
+		if (node_para->right->expr != string("NIL"))
+			throw runtime_error("NL_CDR");
+	}
+	else if (func_name == string("CONS"))
+	{
+		if (node_para->right == NULL ||
+			node_para->right->left == NULL)
+			throw runtime_error("WA_CONS");
+		if (node_para->right->right->expr != string("NIL"))
+			throw runtime_error("NL_CONS");
+	}
+	else if (lp->dlistMap.find(func_name) != lp->dlistMap.end())
+	{
+		TreeNode *formal = lp->dlistMap[func_name]->left;
+		TreeNode *actual = node_para;
+		while (formal->expr != string("NIL"))
+		{
+			if (actual->left == NULL)
+				throw runtime_error("WA_SDF");
+			formal = formal->right;
+			actual = actual->right;
+		}
+		if (actual->expr != string("NIL"))
+			throw runtime_error("WA_SDF");
+		//map<string, TreeNode*> alistSubMap;
+		//addValuePair(formal_iter, node_para, alistSubMap);
+	}
+	else
+	{
+		throw runtime_error("UF"); // ERROR: Unrecognized function
+	}
+
 }
 
 

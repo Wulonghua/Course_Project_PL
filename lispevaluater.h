@@ -27,6 +27,7 @@ public:
 
 private:
     bool checkIsAtom(TreeNode *node) {return !lp->checkIsInnerNode(node);}
+	void checkParaNum(string func_name, TreeNode *node_para);
     TreeNode* applyFunction(TreeNode *node,TreeNode *node_para);
 	TreeNode* generateEvList(TreeNode *node, map<string, TreeNode*> alistMap);
 	void computeCond(TreeNode *root, map<string, TreeNode*> alistMap);
