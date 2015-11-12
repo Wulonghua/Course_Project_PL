@@ -298,7 +298,7 @@ void LispParser::testPrintDList()
     }
 }
 
-void LispParser::testPrintAList()
+void LispParser::testPrintAList(map<string, TreeNode*>& alistMap)
 {
     if(alistMap.size()==0)
         return;
@@ -307,6 +307,7 @@ void LispParser::testPrintAList()
 
     for(map<string,TreeNode*>::iterator iter= alistMap.begin(); iter != alistMap.end(); ++iter)
     {
+		cout << ((*iter).first) << " ";
         updateIsList((*iter).second);
         printExpr((*iter).second);
         cout << endl;
@@ -330,4 +331,14 @@ void LispParser::copyTree(TreeNode *node, TreeNode *node_cpy)
         copyTree(node->right,rt);
         node_cpy->right = rt;
     }
+}
+
+void LispParser::clearListMap(map<string, TreeNode*>& listmap)
+{
+    for(map<string,TreeNode*>::iterator iter= listmap.begin(); iter != listmap.end(); ++iter)
+    {
+        deleteBinaryTree((*iter).second);
+        (*iter).second = NULL;
+    }
+    listmap.clear();
 }

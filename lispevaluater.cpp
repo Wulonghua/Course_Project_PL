@@ -10,11 +10,11 @@ LispEvaluater::~LispEvaluater()
 
 }
 
-bool LispEvaluater::evaluateExpr(TreeNode *node)
-{
+void LispEvaluater::evaluateExpr(TreeNode *node, map<string,TreeNode*> alistMap)
+{ 
     if(checkIsAtom(node)) // exp is an atom
     {
-        if(node->expr == string("T"))
+		if(node->expr == string("T"))
         {
             node->nodeValue.vType = BOOL_TYPE;
             node->nodeValue.boolValue = true;
@@ -29,13 +29,18 @@ bool LispEvaluater::evaluateExpr(TreeNode *node)
             node->nodeValue.vType = INT_TYPE;
             node->nodeValue.intValue = atoi(node->expr.c_str());
         }
-        else if(lp->alistMap.find(node->expr) != lp->alistMap.end())
+        else if(alistMap.find(node->expr) != alistMap.end()) // find the actual value correspondent to the formal parameter
         {
-            node->nodeValue = lp->alistMap[node->expr]->nodeValue;
+            TreeNode *para_cpy = new TreeNode();
+            lp->copyTree(alistMap[node->expr],para_cpy);
+            *node = *para_cpy;
         }
-        else
-            throw runtime_error("UBL"); // ERROR: unbound literal
-    }
+		else
+		{
+			cout << "unbound liter: " << node->expr << endl;
+			throw runtime_error("UBL"); // ERROR: unbound literal
+		}
+	}
     else // exp is a list
     {
         if(node->left->expr == string("QUOTE"))
@@ -59,7 +64,7 @@ bool LispEvaluater::evaluateExpr(TreeNode *node)
         }
         else if(node->left->expr == string("COND"))
         {
-             computeCond(node);
+             computeCond(node,alistMap);
              TreeNode *temp1 = node->left;
              TreeNode *temp2 = node->right;
              *node = *(node->right);
@@ -73,6 +78,17 @@ bool LispEvaluater::evaluateExpr(TreeNode *node)
                node->right->right->right->right == NULL ||
                node->right->right->right->right->expr != string("NIL"))
                 throw runtime_error("WA_DF");
+
+			// funtion name is a literal atom(should not be number)
+			if (!checkIsAtom(node->right->left))
+				throw runtime_error("WT_DF_F");
+			else
+			{
+				if (node->right->left->expr.find_first_not_of("0123456789") == string::npos)
+					throw runtime_error("WT_DF_F");
+			}
+
+			// should not have conflic same name with inner function
             string func_name = node->right->left->expr;
             if(func_name == string("CAR")||func_name == string("CDR")||
                func_name == string("CONS")||func_name == string("ATOM")||
@@ -83,24 +99,54 @@ bool LispEvaluater::evaluateExpr(TreeNode *node)
                func_name == string("LESS")||func_name == string("GREATER")||
                func_name == string("COND")||func_name == string("QUOTE")||func_name == string("DEFUN"))
                 throw runtime_error("CF_DF");
-            // To do :: more error checking
-            TreeNode * temp = node->right->right->right;
+            
+			// Formals are a list, and each one is a distinct literal atom (not T or NIL)
+			TreeNode *formal_list = node->right->right->left;
+			set<string> formal_names;
+			if (checkIsAtom(formal_list))
+			{
+				if (formal_list->expr != string("NIL"))
+					throw runtime_error("WT_DF_FM");
+			}
+			else
+			{
+				do{
+					if (!checkIsAtom(formal_list->left))
+						throw runtime_error("WT_DF_FM");
+					else
+					{
+						if (formal_list->left->expr.find_first_not_of("0123456789") == string::npos||
+							formal_list->left->expr == string("T")||
+							formal_list->left->expr == string("NIL"))
+							throw runtime_error("WT_DF_FM");
+						if (formal_names.find(formal_list->left->expr) == formal_names.end())
+							formal_names.insert(formal_list->left->expr);
+						else
+							throw runtime_error("WT_DF_FM");
+					}
+					formal_list = formal_list->right;
+				} while (!checkIsAtom(formal_list));
+				if (formal_list->expr != string("NIL"))
+					throw runtime_error("WT_DF_FM");
+			}
+
+			TreeNode * temp = node->right->right->right;
             node->right->right->right = temp->left;
             temp->left = NULL;
             lp->deleteBinaryTree(temp);
             temp=NULL;
             lp->dlistMap[node->right->left->expr] = node->right->right;
             node->right->right = NULL;
-            return false;
+			*node = *(node->right->left);
         }
         else
         {
             TreeNode *temp1= node->left;
-            TreeNode *temp2 = node->right;
+            //TreeNode *temp2 = node->right;
                       vector<int> flags;
                       //lp->testPrint(temp2,flags);
                       //cout << endl;
-            *node =*applyFunction(node,generateEvList(node->right));
+            *node =*applyFunction(node,generateEvList(node->right,alistMap));
 //                      flags.clear();
 //                      lp->testPrint(node,flags);
 //                      cout <<" node end " <<endl;
@@ -109,19 +155,19 @@ bool LispEvaluater::evaluateExpr(TreeNode *node)
 //                      lp->testPrint(temp1, flags);
 //                      cout <<" temp1 end " <<endl;
 
-//                      flags.clear();
-//                      lp->testPrint(temp2, flags);
-//                      cout <<" temp2 end "<< endl;
-            if(temp2 != NULL)
-            {
-                temp2->left = NULL;
-                if(temp1->expr==string("CONS"))
-                {
-                    temp2->right = NULL;
-                }
-                lp->deleteBinaryTree(temp2);
-                temp2 = NULL;
-            }
+            //          flags.clear();
+            //          lp->testPrint(temp2, flags);
+            //          cout <<" temp2 end "<< endl;
+            //if(temp2 != NULL)
+            //{
+            //    temp2->left = NULL;
+            //    if(temp1->expr==string("CONS"))
+            //    {
+            //        temp2->right = NULL;
+            //    }
+            //    lp->deleteBinaryTree(temp2);
+            //    temp2 = NULL;
+            //}
             if(temp1 != NULL)
             {
                 lp->deleteBinaryTree(temp1);
@@ -131,18 +177,17 @@ bool LispEvaluater::evaluateExpr(TreeNode *node)
             //           testPrint(node,flags);
         }
     }
-    return true;
 }
 
-TreeNode* LispEvaluater::generateEvList(TreeNode *node)
+TreeNode* LispEvaluater::generateEvList(TreeNode *node, map<string, TreeNode*> alistMap)
 {
 	if (!(checkIsAtom(node) && node->expr == string("NIL")))
 	{
 		if (!checkIsAtom(node))
 		{
-		evaluateExpr(node->left);
+		evaluateExpr(node->left,alistMap);
 		//cout << node->left->expr << endl;
-		generateEvList(node->right);
+		generateEvList(node->right,alistMap);
 		//cout << node->right->expr << endl;
 		}
     }
@@ -325,31 +370,29 @@ TreeNode* LispEvaluater::applyFunction(TreeNode *node, TreeNode *node_para)
     {
 
         TreeNode *para_list = lp->dlistMap[node_func->expr]->left;
-
-        // !!!need to copy the self-defined function body. The code below is not correct.
-        //Treenode *func_body = lp->dlistMap[node_func->expr]->right;
-
         TreeNode *formal_iter = para_list;
-        lp->alistMap.clear();
-        addValuePair(formal_iter,node_para);
-        //cout << "alist size is: "<< lp->alistMap.size()<<endl;
+		map<string, TreeNode*> alistSubMap;
+        addValuePair(formal_iter,node_para,alistSubMap);
+        //lp->testPrintAList();
         TreeNode *func_body_cpy = new TreeNode();
         lp->copyTree(lp->dlistMap[node_func->expr]->right,func_body_cpy);
         //lp->printExpr(func_body_cpy);
         //cout <<endl;
-        evaluateExpr(func_body_cpy);
+        evaluateExpr(func_body_cpy,alistSubMap);
+		lp->clearListMap(alistSubMap);
         //vector<int> flag;
         //lp->testPrint(func_body_cpy,flag);
         return func_body_cpy;
     }
     else
     {
+		cout << "func name: " << node_func->expr << endl;
         throw runtime_error("UF"); // ERROR: Unrecognized function
     }
     return node_para;
 }
 
-void LispEvaluater::computeCond(TreeNode *root)
+void LispEvaluater::computeCond(TreeNode *root, map<string, TreeNode*> alistMap)
 {
 	TreeNode* node = root->right;
 	if (checkIsAtom(node) && node->expr == string("NIL"))
@@ -359,12 +402,12 @@ void LispEvaluater::computeCond(TreeNode *root)
         node->left->right->left == NULL||
         node->left->right->right->expr != string("NIL"))
 		throw runtime_error("WA_COND");
-    evaluateExpr(node->left->left);
+    evaluateExpr(node->left->left, alistMap);
 	if (node->left->left->nodeValue.vType != BOOL_TYPE)
 		throw runtime_error("WT_COND");
     if(node->left->left->nodeValue.boolValue)
     {
-        evaluateExpr(node->left->right->left);
+        evaluateExpr(node->left->right->left, alistMap);
         root->right = node->left->right->left;
         node->left->right->left = NULL;
         lp->deleteBinaryTree(node);
@@ -376,20 +419,26 @@ void LispEvaluater::computeCond(TreeNode *root)
         node->right = NULL;
         lp->deleteBinaryTree(node);
         node = NULL;
-        computeCond(root);
+        computeCond(root, alistMap);
     }
 }
 
-void LispEvaluater::addValuePair(TreeNode *formal, TreeNode *actual)
+void LispEvaluater::addValuePair(TreeNode *formal, TreeNode *actual, map<string, TreeNode*>& listpair)
 {
     while(formal->expr != string("NIL"))
     {
-        lp->alistMap[formal->left->expr] = actual->left;
+		TreeNode *actual_node = new TreeNode();
+		if (actual->left == NULL)
+			throw runtime_error("WA_SDF");
+		lp->copyTree(actual->left, actual_node);
+		listpair[formal->left->expr] = actual_node;
 
         formal = formal->right;
         actual = actual->right;
-        addValuePair(formal,actual);
+        addValuePair(formal,actual,listpair);
     }
+	if (actual->expr != string("NIL"))
+		throw runtime_error("WA_SDF");
 }
 
 

@@ -61,16 +61,17 @@ public:
     void deleteBinaryTree(TreeNode*node);
     void printExpr(TreeNode *node);
     void updateIsList(TreeNode *node);
-    void testPrint(TreeNode *node, vector<int> orders);
-    void testPrintDList();
-    void testPrintAList();
+	void clearListMap(map<string, TreeNode*>& listmap);
     string int2str(int num);
     void copyTree(TreeNode *node, TreeNode *node_cpy);
     bool checkIsInnerNode(TreeNode *node) {return (node->left != NULL || node->right != NULL);}
 
+    void testPrint(TreeNode *node, vector<int> orders);
+    void testPrintDList();
+	void testPrintAList(map<string, TreeNode*>& alistMap);
 public:
     map<string,TreeNode*> dlistMap;
-    map<string,TreeNode*> alistMap;
+    //map<string,TreeNode*> alistMap;
 
 private:
     string getNextToken(string textline, size_t &curIdx);

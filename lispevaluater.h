@@ -14,6 +14,7 @@
 #include "lispparser.h"
 #include <vector>
 #include <iterator>
+#include <set>
 
 using namespace std;
 
@@ -22,14 +23,14 @@ class LispEvaluater
 public:
     LispEvaluater(LispParser *lisp_parser);
     virtual ~LispEvaluater();
-    bool evaluateExpr(TreeNode *node);
+    void evaluateExpr(TreeNode *node, map<string,TreeNode*> alistMap );
 
 private:
     bool checkIsAtom(TreeNode *node) {return !lp->checkIsInnerNode(node);}
     TreeNode* applyFunction(TreeNode *node,TreeNode *node_para);
-    TreeNode* generateEvList(TreeNode *node);
-    void computeCond(TreeNode *root);
-    void addValuePair(TreeNode *formal, TreeNode *actual);
+	TreeNode* generateEvList(TreeNode *node, map<string, TreeNode*> alistMap);
+	void computeCond(TreeNode *root, map<string, TreeNode*> alistMap);
+    void addValuePair(TreeNode *formal, TreeNode *actual, map<string, TreeNode*>& listpair);
 
 private:
     LispParser *lp;
